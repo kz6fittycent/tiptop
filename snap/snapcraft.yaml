@@ -1,0 +1,68 @@
+name: tiptop
+adopt-info: tiptop
+summary: Command-line system monitoring
+description: |
+  tiptop is a command-line system monitoring tool in the spirit of top. 
+  It displays various interesting system stats and graphs them. 
+  Works on all operating systems. Snap is Linux only.
+  
+license: MIT
+
+base: core20
+grade: stable
+confinement: strict
+compression: lzo
+
+architectures:
+  - build-on: amd64
+  - build-on: arm64
+  - build-on: armhf
+  - build-on: ppc64el
+  - build-on: s390x
+
+package-repositories:
+ - type: apt
+   ppa: deadsnakes/ppa
+
+apps:
+  tiptop:
+    command: $SNAP/usr/local/bin/tiptop
+    environment:
+      LC_ALL: C.UTF-8
+      LANG: C.UTF-8
+    plugs:
+      - mount-observe
+      - process-control
+      - system-observe
+      - hardware-observe
+      - network
+      - network-observe
+      - home
+      - removable-media
+
+parts:
+  tiptop:
+    source: https://github.com/nschloe/tiptop
+    source-type: git
+    plugin: nil
+      
+    build-packages:
+      - python3-docutils
+      - python3-psutil
+      - python3-pip
+      - python3-venv
+      
+    stage-packages:
+      - python3-docutils
+      - python3-psutil    
+      
+    override-pull: |
+      snapcraftctl pull
+      snapcraftctl set-version "$(git describe --tags | sed 's/^v//' | cut -d "-" -f1)"
+      
+    override-build: |
+      mkdir -p $SNAPCRAFT_PART_INSTALL/usr/local/bin
+      cd $SNAPCRAFT_PART_INSTALL/usr/local/bin
+      pip install tiptop
+      which tiptop #trying a sanity check
+      
